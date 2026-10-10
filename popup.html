@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Авторизация</title>
+  <style>
+:root {
+  --bg: #ffffff;
+  --fg: #333333;
+  --border: #e0e0e0;
+  --btn-bg: #4a6cf7;
+  --btn-fg: white;
+  --error: #d32f2f;
+  --success: #2e7d32;
+  --warning: #ed6c02;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1e1e1e;
+    --fg: #e0e0e0;
+    --border: #444;
+    --btn-bg: #5a7af7;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 360px;
+  padding: 20px;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 15px;
+}
+
+.view {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.active {
+  display: block !important;
+}
+
+#input-list {
+  display: flex;
+  align-items: center;
+}
+
+input[type=radio] {
+  width: auto;
+  margin: 10px;
+}
+
+#init-error {
+  display: none;
+  color: var(--error);
+  margin-top: 12px;
+  text-align: center;
+}
+
+/* Используется в .view */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+h3 {
+  margin: 16px 0 8px;
+  font-size: 15px;
+}
+
+.auth-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  text-align: left;
+  padding-left: 16px;
+}
+
+.auth-btn:hover {
+  opacity: 0.9;
+}
+
+input {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions button {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+#submit-token,
+#submit-sms,
+#submit-credentials {
+  background: var(--btn-bg);
+  color: white;
+}
+
+.back {
+  background: var(--fg);
+}
+
+.auth-actions {
+  flex-direction: column;
+}
+
+#show-profile {
+  margin-top: 16px;
+  background: var(--btn-bg);
+  color: var(--fg);
+}
+
+#logout {
+  background: var(--error);
+  color: white;
+  margin-top: 8px;
+}
+
+#profile-details {
+  display: none;
+  padding: 12px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+#profile-details pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--fg);
+}
+  </style>
+</head>
+<body>
+  <!-- Выбор способа входа -->
+  <div id="auth-select" class="view active">
+    <h2>Выберите способ входа</h2>
+    <button class="auth-btn token">Токен</button>
+    <button class="auth-btn sms">SMS (по телефону)</button>
+    <button class="auth-btn credentials">Договор + пароль</button>
+  </div>
+
+  <!-- Форма: Токен -->
+  <div id="form-token" class="view">
+    <h2>Вход по токену</h2>
+    <input type="text" id="token-input" placeholder="Ваш токен доступа" autocomplete="off" />
+    <div class="actions">
+      <button id="submit-token">Войти</button>
+      <button class="back">← Назад</button>
+    </div>
+  </div>
+
+  <!-- Форма: SMS — шаг 1 (ввод телефона) -->
+  <div id="form-sms-phone" class="view">
+    <h2>Вход по SMS</h2>
+    <input type="tel" id="phone-input" placeholder="+79991234567" />
+    <div class="actions">
+      <button id="submit-sms-request">Получить код</button>
+      <button class="back">← Назад</button>
+    </div>
+  </div>
+
+  <!-- Форма: SMS — шаг 2 (выбор аккаунта - SubscriberID) -->
+  <div id="form-select-subscribers" class="view">
+    <h2>Выберите аккаунт</h2>
+    <div id='input-list'></div>
+    <div class="actions">
+      <button id="submit-select-subscribers">Войти</button>
+      <button class="back" id="back-to-phone">← Назад</button>
+    </div>
+  </div>
+
+  <!-- Форма: SMS — шаг 3 (ввод кода) -->
+  <div id="form-sms-code" class="view">
+    <h2>Введите SMS-код</h2>
+    <p>Код отправлен на <span id="sms-phone-display"></span></p>
+    <input type="text" id="sms-code-input" placeholder="123456" inputmode="numeric" maxlength="6" />
+    <div class="actions">
+      <button id="submit-sms-code">Войти</button>
+      <button class="back" id="back-to-subscribers">← Назад</button>
+    </div>
+  </div>
+
+  <!-- Форма: Договор + пароль -->
+  <div id="form-credentials" class="view">
+    <h2>Вход по договору</h2>
+    <input type="text" id="contract-input" placeholder="Номер договора" />
+    <input type="password" id="password-input" placeholder="Пароль" />
+    <div class="actions">
+      <button id="submit-credentials">Войти</button>
+      <button class="back">← Назад</button>
+    </div>
+  </div>
+
+  <p id="init-error"></p>
+
+  <!-- Авторизованное состояние -->
+  <div id="authorized-view" class="view">
+    <h2>Вы вошли как <p id="user-identifier">—</p></h2>
+    <p id="auth-method-label">Способ входа: —</p>
+
+    <div class="profile-section" id="profile-details">
+      <h3>Информация о профиле</h3>
+      <pre id="profile-data">Загрузка...</pre>
+    </div>
+
+    <div class="actions auth-actions">
+      <button id="show-profile">О профиле</button>
+      <button id="logout">Выйти вы аккаунта</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

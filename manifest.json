@@ -1,0 +1,16 @@
+{
+"manifest_version":3,
+"action":{"default_icon":"icon.png"},
+"author":"Serjey039",
+"description":"A Chrome extension for open intercom on site Novotelecom Camera Intercom",
+"icons":{"128":"icon.png","16":"icon.png","256":"icon.png","48":"icon.png"},
+"name":"NovotelecomOpenExtension",
+"permissions": ["scripting", "activeTab", "storage", "webRequest"],
+"host_permissions": ["*://myhome.novotelecom.ru/*", "*://video.2090000.ru/*"],
+"background": {
+	"service_worker": "service-worker.js"
+},
+"version":"1.0",
+"content_scripts":[{"matches":["*://*/account/camera/*"],"js":["content.js"]}],
+"action": {"default_popup": "popup.html"}
+}
