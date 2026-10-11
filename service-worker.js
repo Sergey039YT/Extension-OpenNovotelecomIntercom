@@ -54,7 +54,15 @@ chrome.runtime.onConnect.addListener(function(port) {
 						'Content-Type': 'application/json; charset=UTF-8'
 					}
 				});
-				const addresses = (await resp.json()).data;
+				const respText = await resp.text();
+				try {
+					const addresses = JSON.parse(respText).data;
+				} catch {
+					response.success = false;
+					response.error = respText;
+					port.postMessage(response);
+					return;
+				}
 
 				// if (!addresses) return;
 

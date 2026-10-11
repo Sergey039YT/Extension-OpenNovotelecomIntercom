@@ -29,7 +29,11 @@ checkInterval = setInterval(async function(){var url=document.URL;
 
 				// Если запрос отправлен...
 				if (response.success) {
-					json = JSON.parse(response.text);
+					try {
+						json = JSON.parse(response.text);
+					} catch {
+						alert(response.text);
+					}
 					console.log(response.text);
 
 					// Вывести ответ. И если сервер сообщает о открытии двери, то на 4 секунды поменять иконку и цвет кнопки
@@ -39,7 +43,7 @@ checkInterval = setInterval(async function(){var url=document.URL;
 						setTimeout(function(){document.querySelector(".opendoor i").innerText = "🔒";buttonOpen.style.background = '';}, 4000);
 					}
 				} else {
-					alert('ERROR', response.error);
+					alert(`ERROR ${response.error}`);
 				}
 			}
 
